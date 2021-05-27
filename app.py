@@ -4,8 +4,8 @@ import PIL
 import cv2
 from PIL import ImageTk, Image
 
-class app:
-    def __int__(self,window,window_title):
+class App:
+    def __init__(self,window,window_title):
         self.window = window
         self.window.title(window_title)
         self.video_source = 0
@@ -55,4 +55,4 @@ class my_video_capture:
 if __name__ == '__main__':
     root = Tk()
     title = "myapp"
-    app(root,title)
+    App(root,title)
