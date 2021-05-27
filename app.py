@@ -20,13 +20,14 @@ class App:
         self.window.mainloop()
 
     def snapshot(self):
-        ret, frame = self.vid.get_frame()
-        if ret:
+        ret,frame = self.vid.get_frame()
+        is_straight = self.vid.is_straight
+        if ret and is_straight:
             cv2.imwrite("frame-" + time.strftime("%d-%m-%Y-%H-%M-%S") + ".jpg",
                         cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
 
     def update(self):
-        ret, frame = self.vid.get_frame()
+        ret,frame = self.vid.get_frame()
         if ret:
             self.photo = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(frame))
             self.canvas.create_image(0, 0, image=self.photo, anchor=NW)
@@ -37,7 +38,7 @@ class my_video_capture:
         self.vid = cv2.VideoCapture(video_source)
         self.width = self.vid.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.height = self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
-
+        self.is_straight = False
         self.color = (0, 255, 0)
         self.thickness = 1
         self.multiply = 2
@@ -50,9 +51,9 @@ class my_video_capture:
             if ret:
                 return ret, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             else:
-                return ret, None
+                return ret, None,None
         else:
-            return False, None
+            return False, None,None
 
     def __del__(self):
         if self.vid.isOpened():
@@ -106,8 +107,11 @@ class my_video_capture:
 
         if p28_x == p29_x == p30_x == p31_x:
             self.color = (0, 255, 0)
+            self.is_straight = True
+
         else:
             self.color = (0, 0, 255)
+            self.is_straight = False
 
 if __name__ == '__main__':
     root = Tk()
