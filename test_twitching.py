@@ -5,14 +5,17 @@ import face_recognition as face
 import cv2
 from scipy.spatial import distance as dist
 import csv
+import requests
 
-video_capture = cv2.VideoCapture("cut twitching2.mp4")
+video_capture = cv2.VideoCapture("cut twitching.mp4")
 color = (0, 255, 0)
 thickness = 1
 multiply = 2
 left_closed_count = 0
 right_closed_count = 0
 counter = 0
+send_amount = 0
+triggered_time = None
 
 def draweye(mark):
     for i in range(0, len(mark)):
@@ -119,11 +122,41 @@ while video_capture.isOpened():
         if counter >=2:
             if left_closed_count > right_closed_count:
                 if check_mount(top_lip, bottom_lip, True):
-                    print("Your are in real danger, possible to have bad symtomp")
-            else:
-                if check_mount(top_lip, bottom_lip, False):
+                    if triggered_time == None:
+                        triggered_time = time.time()
+                        r = requests.get('https://93bc5a5c5bc9.ngrok.io/line/send?m=Obvious twitching detected! Medical attention is recommened.')
+                        if r.status_code != 200:
+                            print("Cannot send notification")
+
+                    else:
+                        if triggered_time - time.time() < 60000:
+                            r = requests.get('https://93bc5a5c5bc9.ngrok.io/line/send?m=Obvious twitching detected! Medical attention is recommened.')
+                            if r.status_code != 200:
+                                print("Cannot send notification")
+
+                        else:
+                            triggered_time = None
+
                     print("Your are in real danger, possible to have bad symtomp")
 
+            else:
+                if check_mount(top_lip, bottom_lip, False):
+                    if triggered_time == None:
+                        triggered_time = time.time()
+                        r = requests.get('https://93bc5a5c5bc9.ngrok.io/line/send?m=Obvious twitching detected! Medical attention is recommened.')
+                        if r.status_code != 200:
+                            print("Cannot send notification")
+
+                    else:
+                        if triggered_time - time.time() < 60000:
+                            r = requests.get('https://93bc5a5c5bc9.ngrok.io/line/send?m=Obvious twitching detected! Medical attention is recommened.')
+                            if r.status_code != 200:
+                                print("Cannot send notification")
+
+                        else:
+                            triggered_time = None
+
+                    print("Your are in real danger, possible to have bad symtomp")
         
         if left_closed and right_closed:
             left_closed_count = 0
