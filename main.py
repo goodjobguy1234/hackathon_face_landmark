@@ -51,7 +51,7 @@ while video_capture.isOpened():
     ret, frame = video_capture.read()
     small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
     rgb_small_frame = small_frame[:, :, ::-1]
-
+    faec_location = face.face_locations()
     face_landmarks_list = face.face_landmarks(rgb_small_frame)
     for face_landmarks in face_landmarks_list:
 
