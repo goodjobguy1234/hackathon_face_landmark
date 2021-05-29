@@ -124,39 +124,39 @@ while video_capture.isOpened():
                 if check_mount(top_lip, bottom_lip, True):
                     if triggered_time == None:
                         triggered_time = time.time()
-                        r = requests.get('https://93bc5a5c5bc9.ngrok.io/line/send?m=Obvious twitching detected! Medical attention is recommened.')
+                        r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
                         if r.status_code != 200:
                             print("Cannot send notification")
 
                     else:
-                        if triggered_time - time.time() < 60000:
-                            r = requests.get('https://93bc5a5c5bc9.ngrok.io/line/send?m=Obvious twitching detected! Medical attention is recommened.')
+                        if triggered_time - time.time() < 6000000:
+                            r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
                             if r.status_code != 200:
                                 print("Cannot send notification")
 
                         else:
                             triggered_time = None
 
-                    print("Your are in real danger, possible to have bad symtomp")
+                    print("Your are in real danger, possible to have bad symtomp1")
 
             else:
                 if check_mount(top_lip, bottom_lip, False):
                     if triggered_time == None:
                         triggered_time = time.time()
-                        r = requests.get('https://93bc5a5c5bc9.ngrok.io/line/send?m=Obvious twitching detected! Medical attention is recommened.')
+                        r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
                         if r.status_code != 200:
                             print("Cannot send notification")
 
                     else:
-                        if triggered_time - time.time() < 60000:
-                            r = requests.get('https://93bc5a5c5bc9.ngrok.io/line/send?m=Obvious twitching detected! Medical attention is recommened.')
+                        if triggered_time - time.time() < 6000000:
+                            r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
                             if r.status_code != 200:
                                 print("Cannot send notification")
 
                         else:
                             triggered_time = None
 
-                    print("Your are in real danger, possible to have bad symtomp")
+                    print("Your are in real danger, possible to have bad symtomp2")
         
         if left_closed and right_closed:
             left_closed_count = 0
