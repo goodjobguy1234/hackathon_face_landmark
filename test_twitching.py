@@ -16,6 +16,7 @@ right_closed_count = 0
 counter = 0
 send_amount = 0
 triggered_time = None
+elapsed_time = 0
 
 def draweye(mark):
     for i in range(0, len(mark)):
@@ -124,45 +125,41 @@ while video_capture.isOpened():
                 if check_mount(top_lip, bottom_lip, True):
                     if triggered_time == None:
                         triggered_time = time.time()
-                        print(f"case1 clicker time is {triggered_time}")
+                        print(f"CASE 1 -- clicker time is {triggered_time}")
                         r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
                         if r.status_code != 200:
                             print("Cannot send notification")
 
                     else:
-                        if time.time() - triggered_time > 600000:
-                            print(f"case2 clicker time is {time.time() - triggered_time}")
+                        elapsed_time = time.time() - triggered_time
+                        if elapsed_time > 60:
+                            print(f"CASE 2 -- clicker time is {elapsed_time}")
                             r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
                             if r.status_code != 200:
                                 print("Cannot send notification")
-
-                        else:
-                            print("case3 clicker time is None")
                             triggered_time = None
+                            elapsed_time = 0
 
-                    print("Your are in real danger, possible to have bad symtomp1")
+                    print(f"Twitching Detected IF {elapsed_time}")
 
             else:
                 if check_mount(top_lip, bottom_lip, False):
-
                     if triggered_time == None:
-                        print("case1 clicker time is None")
+                        print(f"CASE 3 -- clicker time is {triggered_time}")
                         triggered_time = time.time()
                         r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
                         if r.status_code != 200:
                             print("Cannot send notification")
 
                     else:
-                        if time.time() - triggered_time > 600000:
-                            print(f"case4 clicker time is {time.time() - triggered_time}")
+                        elapsed_time = time.time() - triggered_time
+                        if elapsed_time > 60:
+                            print(f"CASE 4 -- clicker time is {elapsed_time}")
                             r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
                             if r.status_code != 200:
                                 print("Cannot send notification")
-
-                        else:
                             triggered_time = None
-
-                    print("Your are in real danger, possible to have bad symtomp2")
+                    print(f"Twitching Detected ELSE {elapsed_time}")
         
         if left_closed and right_closed:
             left_closed_count = 0
