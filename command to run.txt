@@ -1,0 +1,4 @@
+python prototype.py vdo1.mp4
+python prototype.py vdo2.mp4
+python prototype.py vdo3.mp4
+python prototype.py vdo4.mp4

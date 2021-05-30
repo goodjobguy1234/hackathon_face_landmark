@@ -22,43 +22,46 @@ send_amount = 0
 triggered_time = None
 elapsed_time = 0
 
-# print(f"Arguments {len(sys.argv)}",sys.argv)
-if len(sys.argv) > 2:
-    # expect 2 arguments, -q that is
-    arg = sys.argv[1]
-    video_path = sys.argv[2]
-    if arg == '-q': # expect only -q for now
-        print("Suppress face landmark highlight")
-        draw_face_landmark_highlight = False
-        if path.exists(video_path):
-            video_capture = cv2.VideoCapture(video_path)
-        else:
-            print(f"video file = {video_path} does not exist")
-            exit()        
 
-elif len(sys.argv) > 1:
-    # use only one argument
-    arg = sys.argv[1]
-    if arg == '-h':
-        print("Show help message")
-    elif arg == '-q':
-        print("Suppress face landmark highlight")
-        draw_face_landmark_highlight = False
+def argument_import():
+    global video_capture, draw_face_landmark_highlight,video_path
+    # print(f"Arguments {len(sys.argv)}",sys.argv)
+    if len(sys.argv) > 2:
+        # expect 2 arguments, -q that is
+        arg = sys.argv[1]
+        video_path = "video/"+sys.argv[2]
+        if arg == '-q': # expect only -q for now
+            print("Suppress face landmark highlight")
+            draw_face_landmark_highlight = False
+            if path.exists(video_path):
+                video_capture = cv2.VideoCapture(video_path)
+            else:
+                print(f"video file = {video_path} does not exist")
+                exit()        
+
+    elif len(sys.argv) > 1:
+        # use only one argument
+        arg = sys.argv[1]
+        if arg == '-h':
+            print("Show help message")
+        elif arg == '-q':
+            print("Suppress face landmark highlight")
+            draw_face_landmark_highlight = False
+            video_capture = cv2.VideoCapture(0)
+        else:   # expect the video file path
+            video_path = "video/"+sys.argv[1]
+            print(f"video file = {video_path}")
+
+            if path.exists(video_path):
+                video_capture = cv2.VideoCapture(video_path)
+            else:
+                print(f"video file = {video_path} does not exist")
+                exit()
+
+    else:
+        print("No arguments, open webcam")
         video_capture = cv2.VideoCapture(0)
-    else:   # expect the video file path
-        video_path = sys.argv[1]
-        print(f"video file = {video_path}")
-
-        if path.exists(video_path):
-            video_capture = cv2.VideoCapture(video_path)
-        else:
-            print(f"video file = {video_path} does not exist")
-            exit()
-
-else:
-    print("No arguments, open webcam")
-    video_capture = cv2.VideoCapture(0)
-        
+      
 def draweye(mark):
     for i in range(0, len(mark)):
         p1_x, p2_x = mark[i - 1]
@@ -123,45 +126,48 @@ def check_mount(top_lip, bottom_lip, to_left):
 
         else:
             return False
- 
-while video_capture.isOpened():
-    ret, frame = video_capture.read()
-    small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
-    rgb_small_frame = small_frame[:, :, ::-1]
+
+if __name__ == '__main__':
+    argument_import()
+
+    while video_capture.isOpened():
+        ret, frame = video_capture.read()
+        small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+        rgb_small_frame = small_frame[:, :, ::-1]
 
 
-    face_landmarks_list = face.face_landmarks(rgb_small_frame)
+        face_landmarks_list = face.face_landmarks(rgb_small_frame)
 
-    for face_landmarks in face_landmarks_list:
+        for face_landmarks in face_landmarks_list:
 
-        left_eye = face_landmarks['left_eye']
-        right_eye = face_landmarks['right_eye']
+            left_eye = face_landmarks['left_eye']
+            right_eye = face_landmarks['right_eye']
 
-        top_lip = face_landmarks['top_lip']
-        bottom_lip = face_landmarks['bottom_lip']
+            top_lip = face_landmarks['top_lip']
+            bottom_lip = face_landmarks['bottom_lip']
 
-        left_tip_bottom = left_eye[0][1]
-        right_tip_bottom = right_eye[3][1]
-        top_lip_left = top_lip[0][1]
-        top_lip_right = top_lip[6][1]
+            left_tip_bottom = left_eye[0][1]
+            right_tip_bottom = right_eye[3][1]
+            top_lip_left = top_lip[0][1]
+            top_lip_right = top_lip[6][1]
 
-        distance_left = find_eye_distance(left_tip_bottom,top_lip_left)
-        distance_right = find_eye_distance(right_tip_bottom,top_lip_right)
+            distance_left = find_eye_distance(left_tip_bottom,top_lip_left)
+            distance_right = find_eye_distance(right_tip_bottom,top_lip_right)
 
-        ear_left = get_ear(left_eye)
-        ear_right = get_ear(right_eye)
-        left_closed = ear_left < 0.20 
-        right_closed = ear_right < 0.20
+            ear_left = get_ear(left_eye)
+            ear_right = get_ear(right_eye)
 
-        if ((left_closed and not right_closed) and distance_left <= distance_right):
-            left_closed_count += 1
+            left_closed = ear_left < 0.20 
+            right_closed = ear_right < 0.20
 
-        elif (not left_closed and right_closed) and distance_left >= distance_right:
-            right_closed_count += 1
+            if ((left_closed and not right_closed) and distance_left <= distance_right):
+                left_closed_count += 1
 
-        if counter >=2:
-            if left_closed_count > right_closed_count:
-                if check_mount(top_lip, bottom_lip, True):
+            elif (not left_closed and right_closed) and distance_left >= distance_right:
+                right_closed_count += 1
+
+            if counter >=2:
+                if left_closed_count > right_closed_count:
                     if triggered_time == None:
                         triggered_time = time.time()
                         # print(f"CASE 1 -- clicker time is {triggered_time}")
@@ -181,10 +187,9 @@ while video_capture.isOpened():
 
                     print(f"Twitching Detected")
 
-            else:
-                if check_mount(top_lip, bottom_lip, False):
+                else:
                     if triggered_time == None:
-                        print(f"CASE 3 -- clicker time is {triggered_time}")
+                        # print(f"CASE 3 -- clicker time is {triggered_time}")
                         triggered_time = time.time()
                         r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
                         if r.status_code != 200:
@@ -199,42 +204,43 @@ while video_capture.isOpened():
                                 print("Cannot send notification")
                             triggered_time = None
                     print(f"Twitching Detected")
-                    
-            counter = 0
-        
-        if left_closed and right_closed:
-            left_closed_count = 0
-            right_closed_count = 0
-
-        if left_closed_count > 3:
-            print("your left eye is twitching")
-            counter +=1
-            left_closed_count = 0
-
-        if right_closed_count > 3:
-            print("your right eye is twitching")
-            counter +=1
-            right_closed_count = 0
-
-        if draw_face_landmark_highlight:
-            for facial_feature in face_landmarks.keys():
-                mark = face_landmarks[facial_feature]
-                nose = face_landmarks['nose_bridge']
+                        
+                counter = 0
             
-                is_between(nose)
-                plot(mark)
+            if left_closed and right_closed:
+                left_closed_count = 0
+                right_closed_count = 0
 
-                if facial_feature != 'left_eye' and facial_feature != 'right_eye':
-                    drawface(mark)
-                else:
-                    draweye(mark)
+            if left_closed_count >= 3:
+                print("your left eye is twitching")
+                counter +=1
+                left_closed_count = 0
 
-    cv2.imshow('vdo', frame)
+            if right_closed_count >= 3:
+                print("your right eye is twitching")
+                counter +=1
+                right_closed_count = 0
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+            # draw face high light
+            if draw_face_landmark_highlight:
+                for facial_feature in face_landmarks.keys():
+                    mark = face_landmarks[facial_feature]
+                    nose = face_landmarks['nose_bridge']
+                
+                    is_between(nose)
+                    plot(mark)
 
-video_capture.release()
-cv2.destroyAllWindows()
+                    if facial_feature != 'left_eye' and facial_feature != 'right_eye':
+                        drawface(mark)
+                    else:
+                        draweye(mark)
+
+        cv2.imshow('vdo', frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    video_capture.release()
+    cv2.destroyAllWindows()
 
     
