@@ -6,8 +6,12 @@ import cv2
 from scipy.spatial import distance as dist
 import csv
 import requests
+import sys
+from os import path
 
-video_capture = cv2.VideoCapture("cut twitching.mp4")
+draw_face_landmark_highlight = True
+video_path = None
+video_capture = None
 color = (0, 255, 0)
 thickness = 1
 multiply = 2
@@ -18,6 +22,44 @@ send_amount = 0
 triggered_time = None
 elapsed_time = 0
 
+print(f"Arguments {len(sys.argv)}",sys.argv)
+if len(sys.argv) > 2:
+    # expect 2 arguments, -q that is
+    arg = sys.argv[1]
+    video_path = sys.argv[2]
+    if arg == '-q': # expect only -q for now
+        print("Suppress face landmark highlight")
+        draw_face_landmark_highlight = False
+        if path.exists(video_path):
+            video_capture = cv2.VideoCapture(video_path)
+        else:
+            print(f"video file = {video_path} does not exist")
+            exit()        
+
+elif len(sys.argv) > 1:
+    # use only one argument
+    arg = sys.argv[1]
+    if arg == '-h':
+        print("Show help message")
+    elif arg == '-q':
+        print("Suppress face landmark highlight")
+        print("Suppress face landmark highlight")
+        draw_face_landmark_highlight = False
+        video_capture = cv2.VideoCapture(0)
+    else:   # expect the video file path
+        video_path = sys.argv[1]
+        print(f"video file = {video_path}")
+
+        if path.exists(video_path):
+            video_capture = cv2.VideoCapture(video_path)
+        else:
+            print(f"video file = {video_path} does not exist")
+            exit()
+
+else:
+    print("No arguments, open webcam")
+    video_capture = cv2.VideoCapture(0)
+        
 def draweye(mark):
     for i in range(0, len(mark)):
         p1_x, p2_x = mark[i - 1]
@@ -83,7 +125,7 @@ def check_mount(top_lip, bottom_lip, to_left):
 
         else:
             return False
-
+ 
 while video_capture.isOpened():
     ret, frame = video_capture.read()
     small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
@@ -125,7 +167,7 @@ while video_capture.isOpened():
                 if check_mount(top_lip, bottom_lip, True):
                     if triggered_time == None:
                         triggered_time = time.time()
-                        print(f"CASE 1 -- clicker time is {triggered_time}")
+                        # print(f"CASE 1 -- clicker time is {triggered_time}")
                         r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
                         if r.status_code != 200:
                             print("Cannot send notification")
@@ -133,14 +175,14 @@ while video_capture.isOpened():
                     else:
                         elapsed_time = time.time() - triggered_time
                         if elapsed_time > 60:
-                            print(f"CASE 2 -- clicker time is {elapsed_time}")
+                            # print(f"CASE 2 -- clicker time is {elapsed_time}")
                             r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
                             if r.status_code != 200:
                                 print("Cannot send notification")
                             triggered_time = None
                             elapsed_time = 0
 
-                    print(f"Twitching Detected IF {elapsed_time}")
+                    print(f"Twitching Detected")
 
             else:
                 if check_mount(top_lip, bottom_lip, False):
@@ -154,12 +196,14 @@ while video_capture.isOpened():
                     else:
                         elapsed_time = time.time() - triggered_time
                         if elapsed_time > 60:
-                            print(f"CASE 4 -- clicker time is {elapsed_time}")
+                            # print(f"CASE 4 -- clicker time is {elapsed_time}")
                             r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
                             if r.status_code != 200:
                                 print("Cannot send notification")
                             triggered_time = None
-                    print(f"Twitching Detected ELSE {elapsed_time}")
+                    print(f"Twitching Detected")
+                    
+            counter = 0
         
         if left_closed and right_closed:
             left_closed_count = 0
@@ -175,17 +219,19 @@ while video_capture.isOpened():
             counter +=1
             right_closed_count = 0
 
-        for facial_feature in face_landmarks.keys():
-            mark = face_landmarks[facial_feature]
-            nose = face_landmarks['nose_bridge']
-        
-            is_between(nose)
-            plot(mark)
+        if draw_face_landmark_highlight:
+            for facial_feature in face_landmarks.keys():
+                mark = face_landmarks[facial_feature]
+                nose = face_landmarks['nose_bridge']
+            
+                is_between(nose)
+                plot(mark)
 
-            if facial_feature != 'left_eye' and facial_feature != 'right_eye':
-                drawface(mark)
-            else:
-                draweye(mark)
+                if facial_feature != 'left_eye' and facial_feature != 'right_eye':
+                    drawface(mark)
+                else:
+                    draweye(mark)
+
     cv2.imshow('vdo', frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
