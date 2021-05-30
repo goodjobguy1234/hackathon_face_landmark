@@ -67,7 +67,6 @@ def draweye(mark):
         y = (p1_y * multiply, p2_y * multiply)
         cv2.line(frame, y, x, color, thickness)
 
-
 def drawface(mark):
     for i in range(1, len(mark)):
         p1_x, p2_x = mark[i - 1]
@@ -159,7 +158,6 @@ while video_capture.isOpened():
 
         elif (not left_closed and right_closed) and distance_left >= distance_right:
             right_closed_count += 1
-
 
         if counter >=2:
             if left_closed_count > right_closed_count:
