@@ -4,12 +4,17 @@ from PIL import Image, ImageTk
 import face_recognition as face
 import cv2
 from scipy.spatial import distance as dist
+import csv
 
-video_capture = cv2.VideoCapture(0)
+video_capture = cv2.VideoCapture("cut twitching.mp4")
 color = (0, 255, 0)
 thickness = 1
 multiply = 2
 closed_count = 0
+distance_left =[]
+distance_right =[]
+# DELAY = 5
+# delay_counting = 0
 
 def draweye(mark):
     for i in range(0, len(mark)):
@@ -28,11 +33,9 @@ def drawface(mark):
         y = (p1_y * multiply, p2_y * multiply)
         cv2.line(frame, y, x, color, thickness)
 
-
 def plot(mark):
     for (x, y) in mark:
         cv2.circle(frame, (x * multiply, y * multiply), 2, color, -1)
-
 
 def is_between(nose):
     global color
@@ -65,6 +68,10 @@ def get_ear(eye):
 	# return the eye aspect ratio
 	return ear
 
+def find_eye_distance(bottom_eye,eye_brow):
+    return eye_brow - bottom_eye
+    
+
 while video_capture.isOpened():
     ret, frame = video_capture.read()
     small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
@@ -78,18 +85,35 @@ while video_capture.isOpened():
         left_eye = face_landmarks['left_eye']
         right_eye = face_landmarks['right_eye']
 
-        ear_left = get_ear(left_eye)
-        ear_right = get_ear(right_eye)
-        closed = ear_left > 0.25 and ear_right > 0.25
+        left_eyebrow = face_landmarks['left_eyebrow']
+        right_eyebrow = face_landmarks['right_eyebrow']
 
-        if(not closed):
-            closed_count = 0
+        # ear_left = get_ear(left_eye)
+        # ear_right = get_ear(right_eye)
+        # closed = ear_left > 0.25 or ear_right > 0.25
 
-        if (closed) and is_between(face_landmarks['nose_bridge']):
-            closed_count += 1
+        # if(not closed):
+        #     closed_count = 0
+
+        # if (closed) and is_between(face_landmarks['nose_bridge']):
+        #     closed_count += 1
+    
         
-        if closed_count > 5:
-            print("Eyebrowwww")
+        # if closed_count > 8:
+        #     print("Twitching")
+
+        # if delay_counting >= DELAY:
+        #     delay_counting = 0
+            # if len(distance_left) >= 15:
+                # print(f"distance_left {distance_left}")
+                # distance_left =[]
+
+            # if len(distance_right) >=6:
+                # print(f"distance_right {distance_right}")
+                # distance_right =[]
+
+        distance_left.append(find_eye_distance(left_eyebrow[2][1],left_eye[4][1]))
+        distance_right.append(find_eye_distance(right_eyebrow[2][1],right_eye[4][1]))
         
         for facial_feature in face_landmarks.keys():
             mark = face_landmarks[facial_feature]
@@ -106,6 +130,16 @@ while video_capture.isOpened():
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+
+with open('distance_left_eye.csv', 'a', encoding='UTF8', newline='') as f:
+    writer = csv.writer(f)
+    writer.writerow("left_eye")
+    writer.writerow(distance_left)
+
+with open('distance_right_eye.csv', 'a', encoding='UTF8', newline='') as f:
+    writer = csv.writer(f)
+    writer.writerow("right_eye")
+    writer.writerow(distance_right)
 
 video_capture.release()
 cv2.destroyAllWindows()
