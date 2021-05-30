@@ -21,7 +21,7 @@ counter = 0
 send_amount = 0
 triggered_time = None
 elapsed_time = 0
-
+trigger_time_period = 10 #second
 
 def argument_import():
     global video_capture, draw_face_landmark_highlight,video_path
@@ -29,7 +29,7 @@ def argument_import():
     if len(sys.argv) > 2:
         # expect 2 arguments, -q that is
         arg = sys.argv[1]
-        video_path = "video/"+sys.argv[2]
+        video_path = sys.argv[2]
         if arg == '-q': # expect only -q for now
             print("Suppress face landmark highlight")
             draw_face_landmark_highlight = False
@@ -49,7 +49,7 @@ def argument_import():
             draw_face_landmark_highlight = False
             video_capture = cv2.VideoCapture(0)
         else:   # expect the video file path
-            video_path = "video/"+sys.argv[1]
+            video_path = sys.argv[1]
             print(f"video file = {video_path}")
 
             if path.exists(video_path):
@@ -177,7 +177,7 @@ if __name__ == '__main__':
 
                     else:
                         elapsed_time = time.time() - triggered_time
-                        if elapsed_time > 60:
+                        if elapsed_time > trigger_time_period:
                             # print(f"CASE 2 -- clicker time is {elapsed_time}")
                             r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
                             if r.status_code != 200:
@@ -197,7 +197,7 @@ if __name__ == '__main__':
 
                     else:
                         elapsed_time = time.time() - triggered_time
-                        if elapsed_time > 60:
+                        if elapsed_time > trigger_time_period:
                             # print(f"CASE 4 -- clicker time is {elapsed_time}")
                             r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
                             if r.status_code != 200:
