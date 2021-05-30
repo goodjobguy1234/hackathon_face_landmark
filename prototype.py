@@ -22,7 +22,7 @@ send_amount = 0
 triggered_time = None
 elapsed_time = 0
 
-print(f"Arguments {len(sys.argv)}",sys.argv)
+# print(f"Arguments {len(sys.argv)}",sys.argv)
 if len(sys.argv) > 2:
     # expect 2 arguments, -q that is
     arg = sys.argv[1]
@@ -42,7 +42,6 @@ elif len(sys.argv) > 1:
     if arg == '-h':
         print("Show help message")
     elif arg == '-q':
-        print("Suppress face landmark highlight")
         print("Suppress face landmark highlight")
         draw_face_landmark_highlight = False
         video_capture = cv2.VideoCapture(0)
