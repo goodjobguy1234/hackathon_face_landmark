@@ -127,6 +127,19 @@ def check_mount(top_lip, bottom_lip, to_left):
         else:
             return False
 
+def send_notification():
+    r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
+    print(f"Send Notification {r.status_code}")
+    if r.status_code != 200:
+        print("Cannot send notification")
+
+alert_text_switch = 0
+def alert_text():
+    global alert_text_switch
+    if alert_text_switch % 5 == 0:
+        cv2.putText(frame, 'Twitching', (50,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 100, 100), 2, cv2.LINE_AA)
+    alert_text_switch += 1
+
 if __name__ == '__main__':
     argument_import()
 
@@ -165,23 +178,28 @@ if __name__ == '__main__':
 
             elif (not left_closed and right_closed) and distance_left >= distance_right:
                 right_closed_count += 1
-
+            
             if counter >=2:
+                # frame = alert_text(frame)
+                alert_text()
                 if left_closed_count > right_closed_count:
+
                     if triggered_time == None:
                         triggered_time = time.time()
                         # print(f"CASE 1 -- clicker time is {triggered_time}")
-                        r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
-                        if r.status_code != 200:
-                            print("Cannot send notification")
+                        send_notification()
+                        # r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
+                        # if r.status_code != 200:
+                        #     print("Cannot send notification")
 
                     else:
                         elapsed_time = time.time() - triggered_time
                         if elapsed_time > trigger_time_period:
                             # print(f"CASE 2 -- clicker time is {elapsed_time}")
-                            r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
-                            if r.status_code != 200:
-                                print("Cannot send notification")
+                            send_notification()
+                            # r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
+                            # if r.status_code != 200:
+                            #     print("Cannot send notification")
                             triggered_time = None
                             elapsed_time = 0
 
@@ -191,17 +209,19 @@ if __name__ == '__main__':
                     if triggered_time == None:
                         # print(f"CASE 3 -- clicker time is {triggered_time}")
                         triggered_time = time.time()
-                        r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
-                        if r.status_code != 200:
-                            print("Cannot send notification")
+                        send_notification()
+                        # r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
+                        # if r.status_code != 200:
+                        #     print("Cannot send notification")
 
                     else:
                         elapsed_time = time.time() - triggered_time
                         if elapsed_time > trigger_time_period:
                             # print(f"CASE 4 -- clicker time is {elapsed_time}")
-                            r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
-                            if r.status_code != 200:
-                                print("Cannot send notification")
+                            send_notification()
+                            # r = requests.get('https://line-notifier.herokuapp.com/line/send?m=Obvious twitching detected! Medical attention is recommened.')
+                            # if r.status_code != 200:
+                            #     print("Cannot send notification")
                             triggered_time = None
                     print(f"Twitching Detected")
                         

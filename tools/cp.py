@@ -137,10 +137,13 @@ class App(Frame):
                 cmd.append(self.vdo_file_name.get())                
         print(cmd)
 
+        self.logs.delete(1.0,END)
+        self.logs.insert(INSERT,f"Running...{' '.join(cmd)}\n")
+
         command = " ".join(cmd)
         with Popen(command, stdout=PIPE, stderr=None, shell=True) as process:
             output = process.communicate()[0].decode("utf-8")
-            print(output)
+            self.logs.insert(INSERT,output)
 
                      
 if __name__ == '__main__':
